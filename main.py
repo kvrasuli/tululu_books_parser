@@ -9,27 +9,34 @@ def main():
     for book_id in range(1, 11):
         try:
             txt_url = f'http://tululu.org/txt.php?id={book_id}'
-            title, pic_name = get_title(book_id)
+            title, pic_name, comments, genre = parse_book_page(book_id)
             pic_url = urljoin('http://tululu.org/', pic_name)
   
-            download_txt(txt_url, f'{book_id}. {title}')
-            download_image(pic_url, f'{book_id}. {title}')
+            # download_txt(txt_url, f'{book_id}. {title}')
+            # download_image(pic_url, f'{book_id}. {title}')
         except:
             pass
 
-def get_title(book_id):
+def parse_book_page(book_id):
     response = requests.get(f'http://tululu.org/b{book_id}/')
     response.raise_for_status()
     book_image_selector = '.bookimage a img'
     book_title_selector = 'h1'
+    book_comments_selector = '.texts .black'
+    book_genre_selector = ''
+    comments = []
     if response.url != 'http://tululu.org/':
         soup = BeautifulSoup(response.text, 'lxml')
-        # title = soup.find('h1').text
-
         pic = soup.select_one(book_image_selector)['src']
         title = soup.select_one(book_title_selector).text.split('::')[0].strip()
+
+        for comment in soup.select(book_comments_selector):
+            comments.append(comment.text)
+        print(comments)
+
+        genre = soup.select_one(book_genre_selector)
         
-        return title, pic
+        return title, pic, comments, genre
 
 def download_txt(url, filename, folder='books/'):
     Path(folder).mkdir(parents=True, exist_ok=True)
@@ -50,7 +57,7 @@ def download_image(url, filename, folder='images/'):
     if response.url != 'http://tululu.org/':
         sanitized_filename = sanitize_filename(filename)
         img_extension = Path(url).suffix
-        path_to_save = Path(folder).joinpath(f'{sanitized_filename}.{img_extension}')
+        path_to_save = Path(folder).joinpath(f'{sanitized_filename}{img_extension}')
         with open(path_to_save, 'wb') as image:
             image.write(response.content)
         return path_to_save
