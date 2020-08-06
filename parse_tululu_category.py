@@ -2,9 +2,9 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def parse_category():
+def parse_category(start_page, end_page):
     ids = []
-    for page in range(1, 2):
+    for page in range(start_page, end_page + 1):
         url = f'http://tululu.org/l55/{page}'
         response = requests.get(url)
         response.raise_for_status()
@@ -13,9 +13,12 @@ def parse_category():
             soup = BeautifulSoup(response.text, 'lxml')
             for src in soup.select(book_src_selector):
                 ids.append(src['href'][2:-1])
-    # print(ids)
     return ids
 
 
 if __name__ == '__main__':
-    parse_category()
+    parser = argparse.ArgumentParser(description='Tululu books parser')
+    parser.add_argument('--start_page', help='Start page to parse', default=1, type=int)
+    parser.add_argument('--end_page', help='End page to parse', default=5, type=int)
+    start_page = parser.parse_args().start_page
+    parse_category(start_page, end_page)
