@@ -32,7 +32,7 @@ python3 main.py --start_page 700 --end_page 705
 --dest_folder [path_to_folder] - путь для скачивания
 --skip_img - не скачивать обложки
 --skip_txt - не скачивать книги
---json_path - путь для json-файла
+--json_path [path_to_json] - путь для json-файла
 ```
 
 ### Цель проекта
