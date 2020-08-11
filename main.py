@@ -8,6 +8,7 @@ from parse_tululu_category import parse_category
 import argparse
 import sys
 import logging
+from check_response import check_response, TululuResponseError
 
 
 def main():
@@ -15,34 +16,52 @@ def main():
     start_page, end_page, dest_folder, \
         skip_img, skip_txt, json_path = parse_arguments()
     books = []
-    book_ids = parse_category(start_page, end_page)
+    try:
+        book_ids = parse_category(start_page, end_page)
+    except TululuResponseError as e:
+        logging.error(str(e))
+        print(str(e), file=sys.stderr)
+        sys.exit()
+
     for book_id in book_ids:
         try:
-            txt_url = f'http://tululu.org/txt.php?id={book_id}'
             title, author, pic_name, \
                 comments, genres = parse_book_page(book_id)
-            pic_url = urljoin('http://tululu.org/', pic_name)
-            filename = f'{book_id}. {title}'
-            if not skip_txt:
-                book_path = download_txt(txt_url, filename, Path(dest_folder))
-            else:
-                book_path = None
-            if not skip_img:
-                img_path = download_image(pic_url, filename, Path(dest_folder))
-            else:
-                img_path = None
-        except Exception as e:
-            logging.warning(str(e))
+        except TululuResponseError as e:
+            logging.error(str(e))
             print(str(e), file=sys.stderr)
-        finally:
-            books.append({
-                'title': title,
-                'author': author,
-                'img_src': img_path,
-                'comments': book_path,
-                'genres': comments,
-                'book_path': genres,
-            })
+
+        filename = f'{book_id}. {title}'
+        txt_url = f'http://tululu.org/txt.php?id={book_id}'
+        if not skip_txt:
+            try:
+                book_path = download_txt(txt_url, filename, Path(dest_folder))
+            except TululuResponseError as e:
+                book_path = None
+                logging.error(str(e))
+                print(str(e), file=sys.stderr)
+        else:
+            book_path = None
+
+        pic_url = urljoin('http://tululu.org/', pic_name)
+        if not skip_img:
+            try:
+                img_path = download_image(pic_url, filename, Path(dest_folder))
+            except TululuResponseError as e:
+                img_path = None
+                logging.error(str(e))
+                print(str(e), file=sys.stderr)
+        else:
+            img_path = None
+
+        books.append({
+            'title': title,
+            'author': author,
+            'img_src': img_path,
+            'comments': comments,
+            'genres': genres,
+            'book_path': book_path,
+        })
     json_path = Path(json_path).joinpath('books.json')
     with open(json_path, 'w', encoding='utf8') as json_file:
         json.dump(books, json_file, ensure_ascii=False)
@@ -53,7 +72,6 @@ def parse_arguments():
     parser.add_argument(
         '--start_page', help='Start page to parse', default=1, type=int
     )
-
     parser.add_argument(
         '--end_page', help='End page to parse', default=5, type=int
     )
@@ -73,7 +91,6 @@ def parse_arguments():
         action='store_true'
     )
     parser.add_argument('--json_path', help='JSON path', default='')
-
     arguments = parser.parse_args()
     start_page = arguments.start_page
     end_page = arguments.end_page
@@ -90,7 +107,8 @@ def parse_book_page(book_id):
     book_title_selector = 'h1'
     book_comments_selector = '.texts .black'
     book_genre_selector = '.d_book > a'
-    check_response()
+    error_message = f"Book page {book_id} hasn't been parsed!"
+    check_response(response, error_message)
     soup = BeautifulSoup(response.text, 'lxml')
     pic = soup.select_one(book_image_selector)['src']
     title = soup.select_one(book_title_selector).text.split('::')[0].strip()
@@ -104,7 +122,8 @@ def download_txt(url, filename, folder):
     Path(folder).mkdir(parents=True, exist_ok=True)
     response = requests.get(url)
     sanitized_filename = sanitize_filename(filename)
-    check_response()
+    error_message = f"Book {sanitized_filename} hasn't been downloaded!"
+    check_response(response, error_message)
     path_to_save = Path(folder).joinpath(f'{sanitized_filename}.txt')
     with open(path_to_save, 'wb') as book:
         book.write(response.content)
@@ -115,23 +134,14 @@ def download_image(url, filename, folder):
     Path(folder).mkdir(parents=True, exist_ok=True)
     response = requests.get(url)
     sanitized_filename = sanitize_filename(filename)
-    check_response()
+    error_message = f"Cover {sanitized_filename} hasn't been downloaded!"
+    check_response(response, error_message)
     img_extension = Path(url).suffix
     full_filename = f'{sanitized_filename}{img_extension}'
     path_to_save = Path(folder).joinpath(full_filename)
     with open(path_to_save, 'wb') as image:
         image.write(response.content)
     return str(path_to_save)
-
-
-def check_response(response):
-    response.raise_for_status()
-    if response.url == 'http://tululu.org/':
-        raise Exception()
-    # (f"Book {sanitized_filename} hasn't been downloaded!")
-        # raise Exception(f"Cover {sanitized_filename} \
-        #             hasn't been downloaded!")
-        # raise Exception(f"Book page {book_id} hasn't been parsed!")
 
 
 if __name__ == '__main__':
