@@ -25,8 +25,9 @@ def main():
 
     for book_id in book_ids:
         try:
-            title, author, pic_name, \
+            title, author, pic_url, \
                 comments, genres = parse_book_page(book_id)
+            print(pic_url)
         except TululuResponseError as e:
             logging.error(str(e))
             print(str(e), file=sys.stderr)
@@ -34,13 +35,18 @@ def main():
         filename = f'{book_id}. {title}'
         txt_url = f'http://tululu.org/txt.php?id={book_id}'
         try:
-            book_path = download_txt(txt_url, filename, Path(dest_folder), skip_txt)
+            book_path = download_txt(
+                txt_url,
+                filename,
+                Path(dest_folder),
+                skip_txt
+            )
         except TululuResponseError as e:
             book_path = None
             logging.error(str(e))
             print(str(e), file=sys.stderr)
 
-        pic_url = urljoin('http://tululu.org/', pic_name)
+        pic_url = urljoin(f'http://tululu.org/{book_id}/shots', pic_url)
         try:
             img_path = download_image(
                 pic_url,
