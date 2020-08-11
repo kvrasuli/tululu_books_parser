@@ -86,16 +86,13 @@ def parse_arguments():
 
 def parse_book_page(book_id):
     response = requests.get(f'http://tululu.org/b{book_id}/')
-    response.raise_for_status()
     book_image_selector = '.bookimage a img'
     book_title_selector = 'h1'
     book_comments_selector = '.texts .black'
     book_genre_selector = '.d_book > a'
     comments = []
     genres = []
-    if response.url == 'http://tululu.org/':
-        raise Exception(f"Book page {book_id} hasn't been parsed!")
-        return
+    check_response()
     soup = BeautifulSoup(response.text, 'lxml')
     pic = soup.select_one(book_image_selector)['src']
     title = soup.select_one(book_title_selector).text.split('::')[0].strip()
@@ -112,11 +109,8 @@ def parse_book_page(book_id):
 def download_txt(url, filename, folder):
     Path(folder).mkdir(parents=True, exist_ok=True)
     response = requests.get(url)
-    response.raise_for_status()
     sanitized_filename = sanitize_filename(filename)
-    if response.url == 'http://tululu.org/':
-        raise Exception(f"Book {sanitized_filename} hasn't been downloaded!")
-        return
+    check_response()
     path_to_save = Path(folder).joinpath(f'{sanitized_filename}.txt')
     with open(path_to_save, 'wb') as book:
         book.write(response.content)
@@ -126,18 +120,24 @@ def download_txt(url, filename, folder):
 def download_image(url, filename, folder):
     Path(folder).mkdir(parents=True, exist_ok=True)
     response = requests.get(url)
-    response.raise_for_status()
     sanitized_filename = sanitize_filename(filename)
-    if response.url == 'http://tululu.org/':
-        raise Exception(f"Cover {sanitized_filename} \
-                        hasn't been downloaded!")
-        return
+    check_response()
     img_extension = Path(url).suffix
     full_filename = f'{sanitized_filename}{img_extension}'
     path_to_save = Path(folder).joinpath(full_filename)
     with open(path_to_save, 'wb') as image:
         image.write(response.content)
     return str(path_to_save)
+
+
+def check_response(response):
+    response.raise_for_status()
+    if response.url == 'http://tululu.org/':
+        raise Exception()
+    # (f"Book {sanitized_filename} hasn't been downloaded!")
+        # raise Exception(f"Cover {sanitized_filename} \
+        #             hasn't been downloaded!")
+        # raise Exception(f"Book page {book_id} hasn't been parsed!")
 
 
 if __name__ == '__main__':
