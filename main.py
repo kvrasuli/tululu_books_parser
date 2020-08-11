@@ -16,7 +16,7 @@ def main():
         skip_img, skip_txt, json_path = parse_arguments()
     books = []
     book_ids = parse_category(start_page, end_page)
-    for number, book_id in enumerate(book_ids):
+    for book_id in book_ids:
         try:
             txt_url = f'http://tululu.org/txt.php?id={book_id}'
             title, author, pic_name, \
