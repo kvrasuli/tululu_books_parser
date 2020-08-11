@@ -90,19 +90,13 @@ def parse_book_page(book_id):
     book_title_selector = 'h1'
     book_comments_selector = '.texts .black'
     book_genre_selector = '.d_book > a'
-    comments = []
-    genres = []
     check_response()
     soup = BeautifulSoup(response.text, 'lxml')
     pic = soup.select_one(book_image_selector)['src']
     title = soup.select_one(book_title_selector).text.split('::')[0].strip()
     author = soup.select_one(book_title_selector).text.split('::')[1].strip()
-
-    for comment in soup.select(book_comments_selector):
-        comments.append(comment.text)
-
-    for genre in soup.select(book_genre_selector):
-        genres.append(genre.text)
+    comments = [comment.text for comment in soup.select(book_comments_selector)]
+    genres = [genre.text for genre in soup.select(book_genre_selector)]
     return title, author, pic, comments, genres
 
 
