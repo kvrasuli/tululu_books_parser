@@ -33,26 +33,25 @@ def main():
 
         filename = f'{book_id}. {title}'
         txt_url = f'http://tululu.org/txt.php?id={book_id}'
-        if not skip_txt:
-            try:
-                book_path = download_txt(txt_url, filename, Path(dest_folder))
-            except TululuResponseError as e:
-                book_path = None
-                logging.error(str(e))
-                print(str(e), file=sys.stderr)
-        else:
+        try:
+            book_path = download_txt(txt_url, filename, Path(dest_folder), skip_txt)
+        except TululuResponseError as e:
             book_path = None
+            logging.error(str(e))
+            print(str(e), file=sys.stderr)
 
         pic_url = urljoin('http://tululu.org/', pic_name)
-        if not skip_img:
-            try:
-                img_path = download_image(pic_url, filename, Path(dest_folder))
-            except TululuResponseError as e:
-                img_path = None
-                logging.error(str(e))
-                print(str(e), file=sys.stderr)
-        else:
+        try:
+            img_path = download_image(
+                pic_url,
+                filename,
+                Path(dest_folder),
+                skip_img
+            )
+        except TululuResponseError as e:
             img_path = None
+            logging.error(str(e))
+            print(str(e), file=sys.stderr)
 
         books.append({
             'title': title,
@@ -118,7 +117,9 @@ def parse_book_page(book_id):
     return title, author, pic, comments, genres
 
 
-def download_txt(url, filename, folder):
+def download_txt(url, filename, folder, skip):
+    if skip:
+        return
     Path(folder).mkdir(parents=True, exist_ok=True)
     response = requests.get(url)
     sanitized_filename = sanitize_filename(filename)
@@ -130,7 +131,9 @@ def download_txt(url, filename, folder):
     return str(path_to_save)
 
 
-def download_image(url, filename, folder):
+def download_image(url, filename, folder, skip):
+    if skip or not Path(folder).joinpath(filename + '.txt').is_file():
+        return
     Path(folder).mkdir(parents=True, exist_ok=True)
     response = requests.get(url)
     sanitized_filename = sanitize_filename(filename)
