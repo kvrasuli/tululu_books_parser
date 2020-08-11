@@ -27,7 +27,6 @@ def main():
         try:
             title, author, pic_url, \
                 comments, genres = parse_book_page(book_id)
-            print(pic_url)
         except TululuResponseError as e:
             logging.error(str(e))
             print(str(e), file=sys.stderr)
