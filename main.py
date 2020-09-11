@@ -30,7 +30,6 @@ def main():
         except TululuResponseError as e:
             logging.error(str(e))
             print(str(e), file=sys.stderr)
-
         filename = f'{book_id}. {title}'
         txt_url = f'http://tululu.org/txt.php?id={book_id}'
         if not skip_txt:
@@ -46,8 +45,7 @@ def main():
                 print(str(e), file=sys.stderr)
         else:
             book_path = None
-
-        pic_url = urljoin(f'http://tululu.org/{book_id}/shots', pic_url)
+        pic_url = urljoin(f'http://tululu.org/b{book_id}/', pic_url)
         if not skip_img:
             try:
                 img_path = download_image(
