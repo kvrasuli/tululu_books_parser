@@ -128,6 +128,8 @@ def download_txt(url, filename, folder):
     Path(folder).mkdir(parents=True, exist_ok=True)
     response = requests.get(url)
     sanitized_filename = sanitize_filename(filename)
+    if len(sanitized_filename) > 50:
+        sanitized_filename = sanitized_filename[:50]
     error_message = f"Book {sanitized_filename} hasn't been downloaded!"
     check_response(response, error_message)
     path_to_save = Path(folder).joinpath(f'{sanitized_filename}.txt')
@@ -142,6 +144,8 @@ def download_image(url, filename, folder):
     Path(folder).mkdir(parents=True, exist_ok=True)
     response = requests.get(url)
     sanitized_filename = sanitize_filename(filename)
+    if len(sanitized_filename) > 50:
+        sanitized_filename = sanitized_filename[:50]
     error_message = f"Cover {sanitized_filename} hasn't been downloaded!"
     check_response(response, error_message)
     img_extension = Path(url).suffix
