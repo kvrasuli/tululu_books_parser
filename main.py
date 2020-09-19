@@ -59,15 +59,15 @@ def main():
                 print(str(e), file=sys.stderr)
         else:
             img_path = None
-
-        books.append({
-            'title': title,
-            'author': author,
-            'img_src': img_path,
-            'comments': comments,
-            'genres': genres,
-            'book_path': book_path,
-        })
+        if book_path:
+            books.append({
+                'title': title,
+                'author': author,
+                'img_src': img_path,
+                'comments': comments,
+                'genres': genres,
+                'book_path': book_path,
+            })
     json_path = Path(json_path).joinpath('books.json')
     with open(json_path, 'w', encoding='utf8') as json_file:
         json.dump(books, json_file, ensure_ascii=False)
