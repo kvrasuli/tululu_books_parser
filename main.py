@@ -37,7 +37,7 @@ def main():
                 book_path = download_txt(
                     txt_url,
                     filename,
-                    Path(dest_folder)
+                    Path(dest_folder).joinpath('txt')
                 )
             except TululuResponseError as e:
                 book_path = None
@@ -51,7 +51,7 @@ def main():
                 img_path = download_image(
                     pic_url,
                     filename,
-                    Path(dest_folder)
+                    Path(dest_folder).joinpath('img')
                 )
             except TululuResponseError as e:
                 img_path = None
@@ -59,7 +59,7 @@ def main():
                 print(str(e), file=sys.stderr)
         else:
             img_path = None
-        if book_path:
+        if book_path and img_path:
             books.append({
                 'title': title,
                 'author': author,
@@ -139,7 +139,7 @@ def download_txt(url, filename, folder):
 
 
 def download_image(url, filename, folder):
-    if not Path(folder).joinpath(filename + '.txt').is_file():
+    if not Path(folder).parent.joinpath('txt').joinpath(filename + '.txt').is_file():
         return
     Path(folder).mkdir(parents=True, exist_ok=True)
     response = requests.get(url)
