@@ -1,30 +1,30 @@
-# Парсер книг с сайта tululu.org
+# Parser of books from tululu.org
 
-Консольное приложение для парсинга и скачивания книг и их обложек раздела Научная фантастика с сайта [tululu.org](https://dvmn.org/).
-Сопутствующая информация сохраняется в формате json.
+Console app for parsing and downloading books and their covers from the sci-fi section of [tululu.org](https://dvmn.org/).
+Additional information is stored in a JSON file.
 
-### Как использовать
-- Установить зависимости:
+### How to use
+- Install dependencies:
 ```
 pip3 install -r requirements.txt
 ```
-- Запустить скрипт с аргументами, о них ниже:
+- Run the script with arguments (see below):
 ```
 python3 main.py --start_page [start_page] --end_page [end_page]
 ```
 
-### Аргументы
-Скрипт принимает 2 необязательных аргумента - начальная страница сайта для скачивания и конечная,
-например:
+### Arguments
+The script accepts 2 optional arguments - the first page number and the last page number of tululu.org,
+for example:
 
 ```
 python3 main.py --start_page 700 --end_page 705
 ```
-По умолчанию скачивает первые 5 страниц.
-Другие необязательные аргументы:
+By default only first five pages are downloaded.
+Other optional arguments:
 ```
---dest_folder [path_to_folder] - путь для скачивания
---skip_img - не скачивать обложки
---skip_txt - не скачивать книги
---json_path [path_to_json] - путь для json-файла
+--dest_folder [path_to_folder] - download path
+--skip_img - don't download images
+--skip_txt - don't download books
+--json_path [path_to_json] - path to the json file
 ```
